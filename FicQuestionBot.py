@@ -10,10 +10,13 @@ print(reddit.user.me())
 subreddit = reddit.subreddit("IAmAFiction")
 print(subreddit)
 
-questions = [
-    "Question 1",
-    "Question 2",
-]
+questions = []
+
+with open('questions.txt', 'r') as f:
+    questions_list_str = ""
+    for line in f:
+        questions_list_str = '%s%s' % (questions_list_str, line)
+    questions = eval(questions_list_str)
 
 if not os.path.isfile("posts_replied_to.txt"):
     posts_replied_to = []
