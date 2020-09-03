@@ -14,6 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import praw
+from prawutils.submissions import loop_submissions, search_title
 import re
 import os
 import time
@@ -23,6 +24,23 @@ reddit = praw.Reddit('bot1')
 print(reddit.user.me())
 subreddit = reddit.subreddit("IAmAFiction")
 print(subreddit)
+
+def ask_question(submission, *args):
+    posts_replied_to = args[0]
+    questions = args[1]
+    print("Accessing new")
+    if submission.id not in posts_replied_to:
+        print("Accessing submission")
+        if search_title(submission, "\[Fic\]", "AMA"):
+            success = False
+            while not success:
+                try:
+                    submission.reply(questions[randint(0, len(questions)-1)])
+                    success = True
+                except praw.exceptions.APIException as e:
+                    time.sleep(660)
+            print("Bot replying to : ", submission.title)
+            posts_replied_to.append(submission.id)
 
 questions = []
 
@@ -40,20 +58,7 @@ else:
         posts_replied_to = posts_replied_to.split("\n")
         posts_replied_to = list(filter(None, posts_replied_to))
 
-for submission in subreddit.new(limit=10):
-    print("Accessing new")
-    if submission.id not in posts_replied_to:
-        print("Accessing submission")
-        if re.search("\[Fic\]", submission.title, re.IGNORECASE) or re.search("AMA", submission.title, re.IGNORECASE):
-            success = False
-            while not success:
-                try:
-                    submission.reply(questions[randint(0, len(questions)-1)])
-                    success = True
-                except praw.exceptions.APIException as e:
-                    time.sleep(660)
-            print("Bot replying to : ", submission.title)
-            posts_replied_to.append(submission.id)
+loop_submissions(subreddit, ask_question, 10, posts_replied_to, questions)
 
 with open("posts_replied_to.txt", "w") as f:
     for post_id in posts_replied_to:
