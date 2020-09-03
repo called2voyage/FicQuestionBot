@@ -15,7 +15,6 @@
 
 import praw
 from prawutils.submissions import loop_submissions, search_title
-import re
 import os
 import time
 from random import randint
